@@ -37,20 +37,29 @@ with col1:
 
 with col2:
     st.header('Text Detection:')
-    with st.spinner('Detect bounding boxes contain text'):
-        raw_image, boxes, _ = det_model.predict_one_page('test.jpg')
+    with st.spinner('Detecting bounding boxes contain text...'):
+        raw_image, boxes, scores = det_model.predict_one_page('test.jpg')
         boxes = sorted(boxes, key=lambda box: (box[:, 0].max(), box[:, 1].min()))
         image = raw_image.copy()
-        
-        for box in boxes:
-            box = box.astype(np.int32)[np.newaxis]
-            cv2.polylines(image, box, color=(0, 255, 0), thickness=2, isClosed=True)
-    st.image(image)
+
+        for idx, box in enumerate(boxes):
+            box = box.astype(np.int32)
+            org = (box[3][0] + box[0][0])//2, (box[3][1] + box[0][1])//2
+            
+            cv2.polylines(image, [box], color=(255, 0, 0), thickness=1, isClosed=True)
+            cv2.putText(
+                image, str(idx), org, cv2.FONT_HERSHEY_SIMPLEX, 
+                fontScale=0.8, color=(0, 0, 255), thickness=2
+            )
+        st.image(image)
     
 with col3:
     st.header('Text Recognition:')
-    with st.spinner('Recognize text in each predicted bounding box'):
+    texts = {'Box Score': [], 'Text': []}
+    
+    with st.spinner('Recognizing text in each predicted bounding box...'):
         for idx, box in enumerate(boxes):
             patch = get_patch(raw_image, box)
-            text = reg_model.predict_one_patch(patch)
-            st.caption(f'{idx + 1}. {text}')        
+            texts['Box Score'].append(f'{scores[idx]:.4f}')
+            texts['Text'].append(reg_model.predict_one_patch(patch))
+        st.table(texts)
