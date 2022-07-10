@@ -1,5 +1,16 @@
 import cv2
 import numpy as np
+import streamlit as st
+from crnn import CRNN
+from dbnet import DBNet
+
+
+def load_models():
+    det_model = DBNet()
+    reg_model = CRNN()
+    det_model.model.load_weights('./assets/DBNet.h5')
+    reg_model.model.load_weights('./assets/CRNN.h5')
+    return det_model, reg_model
 
 
 def order_points_clockwise(box_points):

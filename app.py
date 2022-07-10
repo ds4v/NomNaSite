@@ -1,35 +1,39 @@
+import os
 import cv2
+import shutil
 import numpy as np
 import pandas as pd
-import urllib.request
 import streamlit as st
-
-from crnn import CRNN
-from dbnet import DBNet
-from utils import get_patch
+from urllib.request import urlretrieve
+from utils import load_models, get_patch
 
 
-det_model = DBNet()
-reg_model = CRNN()
-det_model.model.load_weights('./assets/DBNet.h5')
-reg_model.model.load_weights('./assets/CRNN.h5')
-
-st.set_page_config(layout="wide")
+@st.cache
+def download_assets():
+    if os.path.exists('assets.zip'): return
+    urlretrieve('https://nomnaftp.000webhostapp.com/assets.zip', 'assets.zip')
+    shutil.unpack_archive('assets.zip', 'assets')
+    
+    
+st.set_page_config(page_title='NomNaOCR Demo', page_icon="📜", layout='wide')
 uploaded_file = st.file_uploader("Choose a file")
 url = st.text_input('Image Url:', 'http://www.nomfoundation.org/data/kieu/1866/page01a.jpg')
+
 st.write('')
+download_assets()    
 col1, col2, col3 = st.columns(3)
     
 with col1:
     st.header('Input Image:')
-    if url: urllib.request.urlretrieve(url, './test.jpg')
+    if url: urlretrieve(url, 'test.jpg')
     elif uploaded_file is not None:
         bytes_data = uploaded_file.read()
-        with open('./test.jpg', 'wb') as f:
+        with open('test.jpg', 'wb') as f:
             f.write(bytes_data)
-    st.image('./test.jpg')
+    st.image('test.jpg')
 
-raw_image, boxes, _ = det_model.predict_one_page('./test.jpg')
+det_model, reg_model = load_models()
+raw_image, boxes, _ = det_model.predict_one_page('test.jpg')
 image = raw_image.copy()
 boxes = sorted(boxes, key=lambda box: (box[:, 0].max(), box[:, 1].min()))
 texts = []
