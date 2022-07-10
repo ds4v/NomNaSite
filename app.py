@@ -15,40 +15,42 @@ def download_assets():
     shutil.unpack_archive('assets.zip', 'assets')
     
     
-st.set_page_config(page_title='NomNaOCR Demo', page_icon="📜", layout='wide')
+st.set_page_config(page_title='NomNaOCR Demo', page_icon="🇻🇳", layout='wide')
 uploaded_file = st.file_uploader("Choose a file")
 url = st.text_input('Image Url:', 'http://www.nomfoundation.org/data/kieu/1866/page01a.jpg')
 
 st.write('')
 download_assets()    
+det_model, reg_model = load_models()
 col1, col2, col3 = st.columns(3)
     
 with col1:
     st.header('Input Image:')
-    if url: urlretrieve(url, 'test.jpg')
-    elif uploaded_file is not None:
+    if uploaded_file is not None:
         bytes_data = uploaded_file.read()
+        st.image(bytes_data)
         with open('test.jpg', 'wb') as f:
             f.write(bytes_data)
-    st.image('test.jpg')
-
-det_model, reg_model = load_models()
-raw_image, boxes, _ = det_model.predict_one_page('test.jpg')
-image = raw_image.copy()
-boxes = sorted(boxes, key=lambda box: (box[:, 0].max(), box[:, 1].min()))
-texts = []
-
-for box in boxes:
-    patch = get_patch(raw_image, box)
-    box = box.astype(np.int32)[np.newaxis]
-    cv2.polylines(image, box, color=(0, 255, 0), thickness=2, isClosed=True)
-    texts.append(reg_model.predict_one_patch(patch))
+    elif url: 
+        urlretrieve(url, 'test.jpg')
+        st.image('test.jpg')
 
 with col2:
     st.header('Text Detection:')
+    with st.spinner('Detect bounding boxes contain text'):
+        raw_image, boxes, _ = det_model.predict_one_page('test.jpg')
+        boxes = sorted(boxes, key=lambda box: (box[:, 0].max(), box[:, 1].min()))
+        image = raw_image.copy()
+        
+        for box in boxes:
+            box = box.astype(np.int32)[np.newaxis]
+            cv2.polylines(image, box, color=(0, 255, 0), thickness=2, isClosed=True)
     st.image(image)
     
 with col3:
     st.header('Text Recognition:')
-    for idx, text in enumerate(texts): 
-        st.caption(f'{idx + 1}. {text}')
+    with st.spinner('Recognize text in each predicted bounding box'):
+        for idx, box in enumerate(boxes):
+            patch = get_patch(raw_image, box)
+            text = reg_model.predict_one_patch(patch)
+            st.caption(f'{idx + 1}. {text}')        
