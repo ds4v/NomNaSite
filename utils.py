@@ -1,10 +1,21 @@
+import os
 import cv2
+import shutil
 import numpy as np
 import streamlit as st
+from urllib.request import urlretrieve
 from crnn import CRNN
 from dbnet import DBNet
 
 
+@st.cache
+def download_assets():
+    if os.path.exists('assets.zip'): return
+    urlretrieve('https://nomnaftp.000webhostapp.com/assets.zip', 'assets.zip')
+    shutil.unpack_archive('assets.zip', 'assets')
+
+
+@st.cache(hash_funcs={DBNet: lambda _: None, CRNN: lambda _: None})
 def load_models():
     det_model = DBNet()
     reg_model = CRNN()

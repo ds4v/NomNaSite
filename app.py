@@ -1,25 +1,11 @@
-import os
 import cv2
-import shutil
 import numpy as np
-import pandas as pd
 import streamlit as st
 from urllib.request import urlretrieve
-from utils import load_models, get_patch
+from utils import download_assets, load_models, get_patch
 
-
-@st.cache
-def download_assets():
-    if os.path.exists('assets.zip'): return
-    urlretrieve('https://nomnaftp.000webhostapp.com/assets.zip', 'assets.zip')
-    shutil.unpack_archive('assets.zip', 'assets')
     
-    
-st.set_page_config(
-    page_title = 'Digitalize old Vietnamese handwritten script for historical document archiving', 
-    page_icon = "🇻🇳", 
-    layout = 'wide'
-)
+st.set_page_config('Digitalize old Vietnamese handwritten script for historical document archiving', '🇻🇳', 'wide')
 col1, col2 = st.columns([5, 4])
 
 with col1:
