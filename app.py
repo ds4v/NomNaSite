@@ -15,9 +15,23 @@ def download_assets():
     shutil.unpack_archive('assets.zip', 'assets')
     
     
-st.set_page_config(page_title='NomNaOCR Demo', page_icon="🇻🇳", layout='wide')
-uploaded_file = st.file_uploader("Choose a file")
-url = st.text_input('Image Url:', 'http://www.nomfoundation.org/data/kieu/1866/page01a.jpg')
+st.set_page_config(
+    page_title = 'Digitalize old Vietnamese handwritten script for historical document archiving', 
+    page_icon = "🇻🇳", 
+    layout = 'wide'
+)
+col1, col2 = st.columns([5, 4])
+
+with col1:
+    st.video('https://user-images.githubusercontent.com/50880271/178230816-c39b5cc7-38e9-4bf3-9803-8e12f286b9fd.mp4')
+    
+with col2:
+    uploaded_file = st.file_uploader('Choose a file', type=['jpg', 'jpeg', 'png'])
+    url = st.text_input('Image URL:', 'http://www.nomfoundation.org/data/kieu/1866/page01b.jpg')
+    st.markdown('''
+        ### Digitalize old Vietnamese handwritten script for historical document archiving
+        Vietnamese Hán-Nôm digitalization using [VNPF's site](http://www.nomfoundation.org) as collected source
+    ''', unsafe_allow_html=True)
 
 st.write('')
 download_assets()    
