@@ -10,9 +10,10 @@ from dbnet import DBNet
 
 @st.cache
 def download_assets():
-    if os.path.exists('assets.zip'): return
-    urlretrieve('https://nomnaftp.000webhostapp.com/assets.zip', 'assets.zip')
-    shutil.unpack_archive('assets.zip', 'assets')
+    if not os.path.exists('assets.zip'):
+        urlretrieve('https://nomnaftp.000webhostapp.com/assets.zip', 'assets.zip')
+    if not os.path.exists('assets'):
+        shutil.unpack_archive('assets.zip', 'assets')
 
 
 @st.cache(hash_funcs={DBNet: lambda _: None, CRNN: lambda _: None})
