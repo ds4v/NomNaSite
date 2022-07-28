@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import streamlit as st
 from urllib.request import urlretrieve
-from utils import download_assets, load_models, get_patch
+from utils import download_assets, load_models, get_patch, get_phonetics
 
     
 st.set_page_config('Digitalize old Vietnamese handwritten script for historical document archiving', '🇻🇳', 'wide')
@@ -38,7 +38,7 @@ with col1:
 with col2:
     st.header('Text Detection:')
     with st.spinner('Detecting bounding boxes contain text...'):
-        raw_image, boxes, scores = det_model.predict_one_page('test.jpg')
+        raw_image, boxes, _ = det_model.predict_one_page('test.jpg')
         boxes = sorted(boxes, key=lambda box: (box[:, 0].max(), box[:, 1].min()))
         image = raw_image.copy()
 
@@ -55,11 +55,14 @@ with col2:
     
 with col3:
     st.header('Text Recognition:')
-    texts = {'Box Score': [], 'Text': []}
+    table = st.table({'Texts': [], 'Phonetics': []})
     
     with st.spinner('Recognizing text in each predicted bounding box...'):
         for idx, box in enumerate(boxes):
             patch = get_patch(raw_image, box)
-            texts['Box Score'].append(f'{scores[idx]:.4f}')
-            texts['Text'].append(reg_model.predict_one_patch(patch))
-        st.table(texts)
+            text = reg_model.predict_one_patch(patch)
+            phonetics = ' '.join([
+                d['o'][0] if d['t'] == 3 and len(d['o']) > 0 else '[UNK]' 
+                for d in get_phonetics(text)
+            ]).strip()
+            table.add_rows({'Texts': [text], 'Phonetics': [phonetics[0].upper() + phonetics[1:]]})

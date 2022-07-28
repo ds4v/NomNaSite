@@ -1,6 +1,10 @@
 import os
 import cv2
+import json
+import time
 import shutil
+import requests
+
 import numpy as np
 import streamlit as st
 from urllib.request import urlretrieve
@@ -56,3 +60,25 @@ def get_patch(page, points):
         page, M, (page_crop_width, page_crop_height), 
         borderMode=cv2.BORDER_REPLICATE, flags=cv2.INTER_CUBIC
     )
+    
+
+def get_phonetics(text):
+    def is_nom_text(result):
+        for phonetics_dict in result:
+            if phonetics_dict['t'] == 3 and len(phonetics_dict['o']) <= 0: 
+                return True
+        return False
+        
+    url = 'https://hvdic.thivien.net/transcript-query.json.php'
+    headers = { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }
+    
+    # Request phonetics for Hán Việt (lang=1) first, if the response result is not
+    # Hán Việt (contains blank lists) => Request phonetics for Nôm (lang=3)
+    for lang in [1, 3]: 
+        payload = f'mode=trans&lang={lang}&input={text}'
+        response = requests.request('POST', url, headers=headers, data=payload.encode())
+        result = json.loads(response.text)['result']
+        if not is_nom_text(result): break
+        time.sleep(0.1)     
+    return result
+    
