@@ -81,4 +81,3 @@ def get_phonetics(text):
         if not is_nom_text(result): break
         time.sleep(0.1)     
     return result
-    

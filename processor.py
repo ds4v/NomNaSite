@@ -5,12 +5,13 @@ from shapely.geometry import Polygon
 
 
 class PostProcessor:
-    def __init__(self, thresh=0.3, min_box_score=0.7, max_candidates=500, unclip_ratio=1.5):
+    def __init__(self, thresh=0.3, min_box_score=0.7, max_candidates=500, shrink_ratio=1.1, dilate_ratio=1.5):
         self.min_size = 3
         self.thresh = thresh
         self.min_box_score = min_box_score
         self.max_candidates = max_candidates
-        self.unclip_ratio = unclip_ratio
+        self.shrink_ratio = shrink_ratio
+        self.dilate_ratio = dilate_ratio
         
 
     def __call__(self, binarize_map, batch_true_sizes):
@@ -40,7 +41,7 @@ class PostProcessor:
             score = self.box_score_fast(pred, points.reshape(-1, 2))
             if self.min_box_score > score: continue
 
-            box = self.unclip(points)
+            box = self.shrink_and_dilate(points)
             box, sside = self.get_mini_boxes(box.reshape(-1, 1, 2))
             if sside < self.min_size + 2: continue
             
@@ -52,12 +53,23 @@ class PostProcessor:
         return boxes, scores
 
 
-    def unclip(self, box):
+    # https://www.panicbyte.xyz/DBNet
+    def shrink_and_dilate(self, box):
         poly = Polygon(box)
-        distance = poly.area * self.unclip_ratio / poly.length
+        shrink_distance = poly.area * (1 - self.shrink_ratio**2) / poly.length
+        clipper = pyclipper.PyclipperOffset()
+        clipper.AddPath(box, pyclipper.JT_SQUARE, pyclipper.ET_CLOSEDPOLYGON)
+        
+        shrink_box = clipper.Execute(-shrink_distance)
+        assert len(shrink_box) != 0
+        shrink_box = shrink_box[0]
+
+        poly = Polygon(shrink_box)
+        dilate_distance = poly.area * self.dilate_ratio / poly.length
         offset = pyclipper.PyclipperOffset()
-        offset.AddPath(box, pyclipper.JT_ROUND, pyclipper.ET_CLOSEDPOLYGON)
-        expanded = np.array(offset.Execute(distance))
+        offset.AddPath(shrink_box, pyclipper.JT_SQUARE, pyclipper.ET_CLOSEDPOLYGON)
+        
+        expanded = np.array(offset.Execute(dilate_distance)[0])
         return expanded
 
 

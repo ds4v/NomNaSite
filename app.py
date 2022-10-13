@@ -38,31 +38,44 @@ with col1:
 with col2:
     st.header('Text Detection:')
     with st.spinner('Detecting bounding boxes contain text...'):
-        raw_image, boxes, _ = det_model.predict_one_page('test.jpg')
-        boxes = sorted(boxes, key=lambda box: (box[:, 0].max(), box[:, 1].min()))
+        raw_image, boxes, scores = det_model.predict_one_page('test.jpg')
+        boxes_and_scores = sorted(zip(boxes, scores), key=lambda box_and_score: (
+            box_and_score[0][:, 0].max(), 
+            box_and_score[0][:, 1].min()
+        ), reverse=True)
         image = raw_image.copy()
 
-        for idx, box in enumerate(boxes):
-            box = box.astype(np.int32)
+        for idx, box_and_score in enumerate(boxes_and_scores):
+            box = box_and_score[0].astype(np.int32)
             org = (box[3][0] + box[0][0])//2, (box[3][1] + box[0][1])//2
             
             cv2.polylines(image, [box], color=(255, 0, 0), thickness=1, isClosed=True)
             cv2.putText(
-                image, str(idx), org, cv2.FONT_HERSHEY_SIMPLEX, 
+                image, str(idx + 1), org, cv2.FONT_HERSHEY_SIMPLEX, 
                 fontScale=0.8, color=(0, 0, 255), thickness=2
             )
         st.image(image)
     
 with col3:
     st.header('Text Recognition:')
-    table = st.table({'Texts': [], 'Phonetics': []})
-    
     with st.spinner('Recognizing text in each predicted bounding box...'):
-        for idx, box in enumerate(boxes):
-            patch = get_patch(raw_image, box)
+        for idx, box_and_score in enumerate(boxes_and_scores):
+            patch = get_patch(raw_image, box_and_score[0])
             text = reg_model.predict_one_patch(patch)
-            phonetics = ' '.join([
-                d['o'][0] if d['t'] == 3 and len(d['o']) > 0 else '[UNK]' 
-                for d in get_phonetics(text)
-            ]).strip()
-            table.add_rows({'Texts': [text], 'Phonetics': [phonetics[0].upper() + phonetics[1:]]})
+             
+            phonetics = ''
+            for d in get_phonetics(text):
+                if d['t'] == 3 and len(d['o']) > 0: 
+                    if len(d['o']) == 1: phonetics += d['o'][0] + ' '
+                    else: phonetics += f'''
+                        <select name="{d['o'][0]}">
+                            {''.join([f'<option><p>{o}</p></option>' for o in d['o']])}
+                        </select>
+                    '''.replace('\n', '')
+                else: phonetics += '[UNK] '
+            
+            st.markdown(f'''
+                <b>Text {idx + 1:02d}</b>: {text} &ensp;|&nbsp;
+                <b>Box Score</b>: {box_and_score[1]:.4f}<br/>
+                {phonetics.strip()}<hr style="margin: 0;"/>
+            ''', unsafe_allow_html=True)
