@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import streamlit as st
 from urllib.request import urlretrieve
-from utils import download_assets, load_models, get_patch, get_phonetics
+from utils import download_assets, load_models, get_patch, hcmus_translate, hvdic_translate
 
     
 st.set_page_config('Digitalize old Vietnamese handwritten script for historical document archiving', '🇻🇳', 'wide')
@@ -64,7 +64,7 @@ with col3:
             text = reg_model.predict_one_patch(patch)
              
             phonetics = ''
-            for d in get_phonetics(text):
+            for d in hvdic_translate(text):
                 if d['t'] == 3 and len(d['o']) > 0: 
                     if len(d['o']) == 1: phonetics += d['o'][0] + ' '
                     else: phonetics += f'''
@@ -75,7 +75,7 @@ with col3:
                 else: phonetics += '[UNK] '
             
             st.markdown(f'''
-                <b>Text {idx + 1:02d}</b>: {text} &ensp;|&nbsp;
-                <b>Box Score</b>: {box_and_score[1]:.4f}<br/>
-                {phonetics.strip()}<hr style="margin: 0;"/>
+                <b>Text {idx + 1:02d}</b>: {text}<br/>
+                [hcmus](https://www.clc.hcmus.edu.vn/?page_id=3039): {hcmus_translate(text)}<br/>
+                [hvdic](https://hvdic.thivien.net/transcript.php#trans): {phonetics.strip()}<hr style="margin: 0;"/>
             ''', unsafe_allow_html=True)

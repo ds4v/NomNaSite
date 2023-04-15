@@ -12,7 +12,7 @@ from crnn import CRNN
 from dbnet import DBNet
 
 
-@st.cache
+@st.cache_resource
 def download_assets():
     if not os.path.exists('assets.zip'):
         urlretrieve('https://nomnaftp.000webhostapp.com/assets.zip', 'assets.zip')
@@ -20,7 +20,7 @@ def download_assets():
         shutil.unpack_archive('assets.zip', 'assets')
 
 
-@st.cache(hash_funcs={DBNet: lambda _: None, CRNN: lambda _: None})
+@st.cache_resource
 def load_models():
     det_model = DBNet()
     reg_model = CRNN()
@@ -61,8 +61,15 @@ def get_patch(page, points):
         borderMode=cv2.BORDER_REPLICATE, flags=cv2.INTER_CUBIC
     )
     
+def hcmus_translate(text):
+    url = 'https://api.clc.hcmus.edu.vn/sentencepairs/90/1'
+    response = requests.request('POST', url, data={'nom_text': text})
+    result = json.loads(response.text)['sentences']
+    result = result[0][0]['pair']['modern_text']
+    return result
 
-def get_phonetics(text):
+
+def hvdic_translate(text):
     def is_nom_text(result):
         for phonetics_dict in result:
             if phonetics_dict['t'] == 3 and len(phonetics_dict['o']) <= 0: 
