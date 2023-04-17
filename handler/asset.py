@@ -6,7 +6,7 @@ from crnn import CRNN
 from dbnet import DBNet
 
 
-@st.cache_resource
+@st.cache_resource(show_spinner='Downloading model weights and vocab.txt...')
 def download_assets():
     if not os.path.exists('assets.zip'):
         urlretrieve('https://nomnaftp.000webhostapp.com/assets.zip', 'assets.zip')
@@ -14,7 +14,7 @@ def download_assets():
         shutil.unpack_archive('assets.zip', 'assets')
 
 
-@st.cache_resource
+@st.cache_resource(show_spinner='Loading model weights...')
 def load_models():
     det_model = DBNet()
     reg_model = CRNN()

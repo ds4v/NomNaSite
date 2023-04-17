@@ -1,16 +1,24 @@
 import json
 import time
 import requests
+import streamlit as st
 
-    
+
+@st.cache_data(show_spinner=False) 
 def hcmus_translate(text):
     url = 'https://api.clc.hcmus.edu.vn/sentencepairs/90/1'
     response = requests.request('POST', url, data={'nom_text': text})
-    result = json.loads(response.text)['sentences']
-    result = result[0][0]['pair']['modern_text']
-    return result
+    result = json.loads(response.text)
+    time.sleep(0.1)     
+    
+    if 'sentences' in result:
+        result = result['sentences'][0][0]
+        result = result['pair']['modern_text']
+        return result
+    return 'Cannot translate this text.'
 
 
+@st.cache_data(show_spinner=False)
 def hvdic_translate(text):
     def is_nom_text(result):
         for phonetics_dict in result:
@@ -26,12 +34,15 @@ def hvdic_translate(text):
     for lang in [1, 3]: 
         payload = f'mode=trans&lang={lang}&input={text}'
         response = requests.request('POST', url, headers=headers, data=payload.encode())
-        result = json.loads(response.text)['result']
-        if not is_nom_text(result): break
         time.sleep(0.1)     
+        
+        result = json.loads(response.text)
+        result = result['result'] if 'result' in result else ''
+        if not is_nom_text(result): break
     return result
 
 
+@st.cache_data(show_spinner=False)
 def hvdic_render(text):
     phonetics = ''
     for d in hvdic_translate(text):
