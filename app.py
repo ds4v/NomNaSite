@@ -20,7 +20,7 @@ def img2str(cv2_image):
 
 st.set_page_config('Digitalize old Vietnamese handwritten script for historical document archiving', '🇻🇳', 'wide')
 download_assets()    
-det_model, reg_model = load_models()
+det_model, rec_model = load_models()
 col1, col2 = st.columns([3, 4])
 image_name = 'test.jpg'
 
@@ -37,7 +37,7 @@ with col1:
         with col11:
             mode = st.radio('Mode', ('Drawing', 'Editing'), horizontal=True, label_visibility='collapsed', key=f'mode_{key}')
         with col12:
-            reg_clicked = st.button('Extract text', type='primary', use_container_width=True)
+            rec_clicked = st.button('Extract text', type='primary', use_container_width=True)
         
         # https://github.com/andfanilo/streamlit-drawable-canvas/issues/73
         # width, height = raw_image.shape[1], raw_image.shape[0]
@@ -68,7 +68,7 @@ with col1:
             stroke_color = 'red',
             drawing_mode = 'rect' if mode == 'Drawing' else 'transform',
             initial_drawing = initial_drawing,
-            update_streamlit = reg_clicked,
+            update_streamlit = rec_clicked,
             key = f'canvas_{key}'
         )
         
@@ -82,7 +82,7 @@ with col2:
         with st.spinner('Recognizing text in each bounding box...'):
             for idx, box in enumerate(canvas_boxes):
                 patch = get_patch(raw_image, box)
-                text = reg_model.predict_one_patch(patch)
+                text = rec_model.predict_one_patch(patch)
                 st.markdown(f'''
                     <b>Text {idx + 1:02d}</b>: {text}<br/>
                     [hcmus](https://www.clc.hcmus.edu.vn/?page_id=3039): {hcmus_translate(text)}<br/>

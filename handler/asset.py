@@ -17,10 +17,10 @@ def download_assets():
 @st.cache_resource(show_spinner='Loading model weights...')
 def load_models():
     det_model = DBNet()
-    reg_model = CRNN()
+    rec_model = CRNN()
     det_model.model.load_weights('./assets/DBNet.h5')
-    reg_model.model.load_weights('./assets/CRNN.h5')
-    return det_model, reg_model
+    rec_model.model.load_weights('./assets/CRNN.h5')
+    return det_model, rec_model
 
 
 def file_uploader(image_name='test.jpg'):
