@@ -8,14 +8,15 @@ import streamlit as st
 def hcmus_translate(text):
     url = 'https://api.clc.hcmus.edu.vn/sentencepairs/90/1'
     response = requests.request('POST', url, data={'nom_text': text})
-    result = json.loads(response.text)
     time.sleep(0.1)     
     
-    if 'sentences' in result:
-        result = result['sentences'][0][0]
-        result = result['pair']['modern_text']
+    try:
+        result = json.loads(response.text)['sentences']
+        result = result[0][0]['pair']['modern_text']
         return result
-    return 'Cannot translate this text.'
+    except:
+        print(f'[ERR] {text}: {response.text}')
+        return 'Cannot translate this text.'
 
 
 @st.cache_data(show_spinner=False)
@@ -36,8 +37,11 @@ def hvdic_translate(text):
         response = requests.request('POST', url, headers=headers, data=payload.encode())
         time.sleep(0.1)     
         
-        result = json.loads(response.text)
-        result = result['result'] if 'result' in result else ''
+        try: 
+            result = json.loads(response.text)['result'] 
+        except: 
+            print(f'[ERR] {text}: {response.text}')
+            result = {}
         if not is_nom_text(result): break
     return result
 
@@ -54,5 +58,7 @@ def hvdic_render(text):
                 </select>
             '''.replace('\n', '')
         else: phonetics += '[UNK] '
-    return phonetics.strip()
+        
+    if len(phonetics) > 0: return phonetics.strip()  
+    return 'No response from hvdic => You can clear caches (Press C) and reload.'
     
