@@ -1,9 +1,11 @@
 import cv2
+import json
 import hashlib
 import numpy as np
 import streamlit as st
 
 from PIL import Image
+from zipfile import ZipFile
 from streamlit_drawable_canvas import st_canvas
 from streamlit_javascript import st_javascript
 
@@ -23,11 +25,11 @@ def img2str(cv2_image):
 
 st.set_page_config('Digitalize old Vietnamese handwritten script for historical document archiving', '🇻🇳', 'wide')
 st.markdown(custom_style, unsafe_allow_html=True)
+image_name = 'test.jpg'
 
 download_assets()    
 det_model, rec_model = load_models()
 col1, col2 = st.columns(2)
-image_name = 'test.jpg'
 
 
 with st.sidebar:
@@ -54,15 +56,15 @@ with col1:
             saved_format = st.radio('Type', ('csv', 'json'), horizontal=True, label_visibility='collapsed')
             st.download_button(
                 label = f'📥 Export to data.{saved_format}',
-                data = open(f'data/data.{saved_format}', 'r'),
-                file_name = saved_format,
-                use_container_width = True
+                data = open(f'data/data.{saved_format}', encoding='utf-8'),
+                file_name = f'data.{saved_format}',
+                use_container_width = True, 
             )
             st.download_button(
                 label = f'🖼️ Download patches',
-                data = open(f'data/data.{saved_format}', 'r'),
-                file_name = saved_format,
-                use_container_width = True
+                data = open('data/patches.zip', 'rb'),
+                file_name = 'patches.zip',
+                use_container_width = True, 
             )
 
         canvas_result = st_canvas(
@@ -88,32 +90,44 @@ with col2:
         ])
 
     with st.spinner('Recognizing text in each bounding box...'):
-        with open(f'data/data.json', 'w', encoding='utf-8') as json_file:
-            save_json = {
-                'num_det': len(canvas_boxes), 
-                'height': raw_image.shape[0], 
-                'width': raw_image.shape[1], 
-                'patches': []
-            }
-            with open(f'data/data.csv', 'w', encoding='utf-8') as txt_file:
-                for idx, box in enumerate(canvas_boxes):
-                    patch = get_patch(raw_image, box)
-                    nom_text = rec_model.predict_one_patch(patch).strip()
-                    modern_text = hcmus_translate(nom_text).strip()
+        with ZipFile('data/patches.zip', 'w') as zip_file:
+            with open(f'data/data.json', 'w', encoding='utf-8') as json_file:
+                saved_json = {
+                    'num_boxes': len(canvas_boxes), 
+                    'height': raw_image.shape[0], 
+                    'width': raw_image.shape[1], 
+                    'patches': []
+                }
+                with open(f'data/data.csv', 'w', encoding='utf-8', newline='') as csv_file:
+                    csv_file.write('x1,y1,x2,y2,x3,y3,x4,y4,nom,modern,height,width\n')
                     
-                    with st.expander(f':red[**Text {idx + 1:02d}**:] {nom_text}'):
-                        col21, col22 = st.columns([1, 7])
-                        with col21:
-                            st.image(patch)
-                        with col22:
-                            points = sum(box.tolist(), [])
-                            points = ','.join([str(round(p)) for p in points])
-                            st.json({
-                                'nom': nom_text, 'modern': modern_text, 'points': points, 
-                                'height': patch.shape[0], 'width': patch.shape[1]
-                            })
+                    for idx, box in enumerate(canvas_boxes):
+                        patch = get_patch(raw_image, box)
+                        nom_text = rec_model.predict_one_patch(patch).strip()
+                        modern_text = hcmus_translate(nom_text).strip()
                             
-                    st.markdown(f'''
-                        [hcmus](https://www.clc.hcmus.edu.vn/?page_id=3039): {modern_text}<br/>
-                        [hvdic](https://hvdic.thivien.net/transcript.php#trans): {hvdic_render(nom_text)}
-                    ''', unsafe_allow_html=True)
+                        with st.expander(f':red[**Text {idx + 1:02d}**:] {nom_text}'):
+                            col21, col22 = st.columns([1, 7])
+                            with col21:
+                                st.image(patch)
+                            with col22:
+                                points = sum(box.tolist(), [])
+                                points = ','.join([str(round(p)) for p in points])
+                                saved_json['patches'].append({
+                                    'nom': nom_text, 'modern': modern_text, 'points': points, 
+                                    'height': patch.shape[0], 'width': patch.shape[1]
+                                })
+                                st.json(saved_json['patches'][-1])
+                            
+                        st.markdown(f'''
+                            [hcmus](https://www.clc.hcmus.edu.vn/?page_id=3039): {modern_text}<br/>
+                            [hvdic](https://hvdic.thivien.net/transcript.php#trans): {hvdic_render(nom_text)}
+                        ''', unsafe_allow_html=True)
+
+                        encoded_patch = cv2.imencode('.jpg', cv2.cvtColor(patch, cv2.COLOR_BGR2RGB))[1]
+                        zip_file.writestr(f'img/{nom_text}.jpg', encoded_patch)
+                        csv_file.write(points + f',{nom_text},{modern_text},{patch.shape[0]},{patch.shape[1]}\n')
+                json.dump(saved_json, json_file, ensure_ascii=False, indent=4)
+                
+            zip_file.write('data/data.json')
+            zip_file.write('data/data.csv')
