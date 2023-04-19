@@ -11,8 +11,15 @@ custom_style = '''
         .block-container > div > 
         [data-testid="stVerticalBlock"] > 
         [data-testid="stHorizontalBlock"] > 
+        [data-testid="column"]:nth-of-type(1) > div > 
+        [data-testid="stVerticalBlock"] > .element-container:nth-of-type(1) {
+            position: absolute;
+        }
+        .block-container > div > 
+        [data-testid="stVerticalBlock"] > 
+        [data-testid="stHorizontalBlock"] > 
         [data-testid="column"]:nth-of-type(2) {
-            height: 80vh;
+            height: 120vh;
             overflow-x: hidden;
             overflow-y: scroll;
         }
@@ -25,7 +32,7 @@ custom_style = '''
         }
         button:disabled, button:disabled:hover, button:disabled:active {
             border-color: transparent!important;
-            color: black!important;
+            color: unset!important;
             cursor: auto!important;
             padding-left: 0px;
         }
