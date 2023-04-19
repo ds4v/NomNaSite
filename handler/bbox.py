@@ -2,16 +2,39 @@ import cv2
 import numpy as np
 
 
+def generate_initial_drawing(boxes, size_ratio):
+    initial_drawing = {'version': '4.4.0', 'objects': []}
+    for box_pts in boxes:
+        left = max(box_pts[0][0], box_pts[3][0])
+        top = max(box_pts[0][1], box_pts[1][1])
+        width = max(box_pts[1][0], box_pts[2][0]) - min(box_pts[0][0], box_pts[3][0])
+        height = max(box_pts[2][1], box_pts[3][1]) - min(box_pts[0][1], box_pts[1][1])
+        
+        initial_drawing['objects'].append({
+            'type': 'rect',
+            'left': left * size_ratio,
+            'top': top * size_ratio,
+            'width': width * size_ratio,
+            'height': height * size_ratio,
+            'fill': 'rgba(76, 175, 80, 0.3)',
+            'stroke': 'red',
+            'strokeWidth': 2,
+            'strokeUniform': True,
+            'transparentCorners': False
+        })
+    return initial_drawing
+
+
 # https://github.com/andfanilo/streamlit-drawable-canvas/issues/65
-def transform_fabric_box(box):
+def transform_fabric_box(box, size_ratio):
     scaled_width = box['width'] * box['scaleX']
     scaled_height = box['height'] * box['scaleY']
     return np.array([
         [box['left'], box['top']], 
         [box['left'] + scaled_width, box['top']], 
         [box['left'] + scaled_width, box['top'] + scaled_height], 
-        [box['left'], box['top'] + scaled_height]]
-    )
+        [box['left'], box['top'] + scaled_height]
+    ]) / size_ratio
     
     
 def order_points_clockwise(box_points):
