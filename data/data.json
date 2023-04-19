@@ -1,0 +1,175 @@
+{
+    "num_boxes": 24,
+    "height": 514,
+    "width": 395,
+    "patches": [
+        {
+            "nom": "𡦂才𡦂命窖󰑼恄饒",
+            "modern": "chữ tài chữ mệnh khéo là ghét nhau",
+            "points": "364,239,394,239,394,501,364,501",
+            "height": 262,
+            "width": 29
+        },
+        {
+            "nom": "𤾓𢆥𥪞揆𠊛些",
+            "modern": "trăm năm trong cõi người ta",
+            "points": "359,7,390,7,390,194,359,194",
+            "height": 186,
+            "width": 30
+        },
+        {
+            "nom": "仍調𬖉𧡊㐌𤴬疸𢚸",
+            "modern": "những điều trông thấy đã đau đớn lòng",
+            "points": "330,242,361,242,361,501,330,501",
+            "height": 258,
+            "width": 30
+        },
+        {
+            "nom": "𣦆戈没局𣷭橷",
+            "modern": "trải qua một cuộc bể dâu",
+            "points": "324,5,355,5,355,197,324,197",
+            "height": 192,
+            "width": 30
+        },
+        {
+            "nom": "𡗶撑涓貝𦟐紅打悭",
+            "modern": "trời xanh quen với má hồng đánh ghen",
+            "points": "297,242,327,242,327,499,297,499",
+            "height": 256,
+            "width": 29
+        },
+        {
+            "nom": "𨔍之彼嗇斯豊",
+            "modern": "lạ gì bỉ sắc tư phong",
+            "points": "294,7,321,7,321,195,294,195",
+            "height": 187,
+            "width": 27
+        },
+        {
+            "nom": "風情固錄群傳史撑",
+            "modern": "phong tình có lục còn truyền sử xanh",
+            "points": "263,242,295,242,295,504,263,504",
+            "height": 262,
+            "width": 32
+        },
+        {
+            "nom": "稿𦹳吝󰇾𠓀畑",
+            "modern": "cảo thơm lần giở trước đèn",
+            "points": "262,6,290,6,290,194,262,194",
+            "height": 187,
+            "width": 27
+        },
+        {
+            "nom": "𦊚方𪹚𣼽𠄩京凭鐄",
+            "modern": "bốn phương bừng lặng hai kinh vững vàng",
+            "points": "230,240,259,240,259,504,230,504",
+            "height": 264,
+            "width": 28
+        },
+        {
+            "nom": "浪𢆥妬精朝明",
+            "modern": "rằng năm đó tinh triều minh",
+            "points": "229,7,259,7,259,198,229,198",
+            "height": 191,
+            "width": 29
+        },
+        {
+            "nom": "家資擬拱常常堛中",
+            "modern": "gia tư nghĩ cũng thường thường bậc trung",
+            "points": "196,240,226,240,226,502,196,502",
+            "height": 262,
+            "width": 29
+        },
+        {
+            "nom": "固茹員外户王",
+            "modern": "có nhà viên ngoại họ vương",
+            "points": "196,8,224,8,224,190,196,190",
+            "height": 182,
+            "width": 27
+        },
+        {
+            "nom": "没𤳆𡥵次卒𢚸",
+            "modern": "một trai con thứ tốt lòng",
+            "points": "164,7,194,7,194,197,164,197",
+            "height": 190,
+            "width": 29
+        },
+        {
+            "nom": "王󰞹󰑼𡦂綏𣳔儒家",
+            "modern": "vương quan là chữ nối dòng nho gia",
+            "points": "164,241,192,241,192,504,164,504",
+            "height": 263,
+            "width": 27
+        },
+        {
+            "nom": "翠翹󰑼姉㛪󰑼翠雲",
+            "modern": "thuý kiều là chị em là thuý vân",
+            "points": "131,240,162,240,162,504,131,504",
+            "height": 264,
+            "width": 30
+        },
+        {
+            "nom": "頭𢚸𠄩妸素娥",
+            "modern": "đầu lòng hai ả tố nga",
+            "points": "129,6,161,6,161,196,129,196",
+            "height": 190,
+            "width": 32
+        },
+        {
+            "nom": "没𠊛没𨤔𨑮分院𨑮",
+            "modern": "một người một vẻ mười phân vẹn mười",
+            "points": "100,241,132,241,132,500,100,500",
+            "height": 258,
+            "width": 32
+        },
+        {
+            "nom": "枚骨格雪精神",
+            "modern": "mai cốt cách tuyết tinh thần",
+            "points": "97,5,127,5,127,196,97,196",
+            "height": 191,
+            "width": 29
+        },
+        {
+            "nom": "囷𦝄苔惮󰞺𧍋𦬑囊",
+            "modern": "khuôn trăng đầy đặn nét ngài nở nang",
+            "points": "67,241,100,241,100,507,67,507",
+            "height": 265,
+            "width": 33
+        },
+        {
+            "nom": "雲󰏙莊重恪潙",
+            "modern": "vân xem trang trọng khác vời",
+            "points": "64,5,96,5,96,197,64,197",
+            "height": 192,
+            "width": 32
+        },
+        {
+            "nom": "𩄲輸渃𩯀雪讓牟䏧",
+            "modern": "mây thua nước tóc tuyết nhường màu da",
+            "points": "34,239,67,239,67,505,34,505",
+            "height": 265,
+            "width": 33
+        },
+        {
+            "nom": "花唭玉説端莊",
+            "modern": "hoa cười ngọc thốt đoan trang",
+            "points": "32,4,63,4,63,196,32,196",
+            "height": 192,
+            "width": 30
+        },
+        {
+            "nom": "搊皮才色吏󰑼分欣",
+            "modern": "so bề tài sắc lại là phần hơn",
+            "points": "3,240,32,240,32,503,3,503",
+            "height": 263,
+            "width": 28
+        },
+        {
+            "nom": "翹強色稍漫𣻕",
+            "modern": "kiều càng sắc sảo mặn mà",
+            "points": "2,6,30,6,30,197,2,197",
+            "height": 191,
+            "width": 27
+        }
+    ]
+}

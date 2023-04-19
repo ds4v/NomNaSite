@@ -4,3 +4,4 @@ assets/
 *.zip
 *.jpg
 *.h5
+!patches.zip

@@ -1,81 +1,133 @@
 import cv2
+import json
+import hashlib
 import numpy as np
 import streamlit as st
-from urllib.request import urlretrieve
-from utils import download_assets, load_models, get_patch, hcmus_translate, hvdic_translate
 
+from PIL import Image
+from zipfile import ZipFile
+from streamlit_drawable_canvas import st_canvas
+from streamlit_javascript import st_javascript
+
+from handler.asset import download_assets, load_models, file_uploader
+from handler.bbox import generate_initial_drawing, transform_fabric_box, order_boxes4nom, get_patch
+from handler.translator import hcmus_translate, hvdic_render
+from css import custom_style
+
+
+def img2str(cv2_image):
+    img_bytes = cv2.imencode('.jpg', cv2_image)[1].tobytes()
+    hash_object = hashlib.sha256(img_bytes)
+    hash_str = hash_object.hexdigest()
+    print(hash_str)
+    return hash_str
     
+
 st.set_page_config('Digitalize old Vietnamese handwritten script for historical document archiving', '🇻🇳', 'wide')
-col1, col2 = st.columns([5, 4])
+st.markdown(custom_style, unsafe_allow_html=True)
+image_name = 'test.jpg'
 
-with col1:
-    st.video('https://user-images.githubusercontent.com/50880271/178230816-c39b5cc7-38e9-4bf3-9803-8e12f286b9fd.mp4')
-    
-with col2:
-    uploaded_file = st.file_uploader('Choose a file', type=['jpg', 'jpeg', 'png'])
-    url = st.text_input('Image URL:', 'http://www.nomfoundation.org/data/kieu/1866/page01b.jpg')
-    st.markdown('''
-        ### Digitalize old Vietnamese handwritten script for historical document archiving
-        Vietnamese Hán-Nôm digitalization using [VNPF's site](http://www.nomfoundation.org) as collected source
-    ''', unsafe_allow_html=True)
-
-st.write('')
 download_assets()    
-det_model, reg_model = load_models()
-col1, col2, col3 = st.columns(3)
+det_model, rec_model = load_models()
+col1, col2 = st.columns(2)
+
+
+with st.sidebar:
+    file_uploader(image_name)
     
+
 with col1:
-    st.header('Input Image:')
-    if uploaded_file is not None:
-        bytes_data = uploaded_file.read()
-        st.image(bytes_data)
-        with open('test.jpg', 'wb') as f:
-            f.write(bytes_data)
-    elif url: 
-        urlretrieve(url, 'test.jpg')
-        st.image('test.jpg')
-
-with col2:
-    st.header('Text Detection:')
-    with st.spinner('Detecting bounding boxes contain text...'):
-        raw_image, boxes, scores = det_model.predict_one_page('test.jpg')
-        boxes_and_scores = sorted(zip(boxes, scores), key=lambda box_and_score: (
-            box_and_score[0][:, 0].max(), 
-            box_and_score[0][:, 1].min()
-        ), reverse=True)
-        image = raw_image.copy()
-
-        for idx, box_and_score in enumerate(boxes_and_scores):
-            box = box_and_score[0].astype(np.int32)
-            org = (box[3][0] + box[0][0])//2, (box[3][1] + box[0][1])//2
-            
-            cv2.polylines(image, [box], color=(255, 0, 0), thickness=1, isClosed=True)
-            cv2.putText(
-                image, str(idx + 1), org, cv2.FONT_HERSHEY_SIMPLEX, 
-                fontScale=0.8, color=(0, 0, 255), thickness=2
-            )
-        st.image(image)
+    raw_image = cv2.cvtColor(cv2.imread(image_name), cv2.COLOR_BGR2RGB)
+    canvas_width = st_javascript('await fetch(window.location.href).then(response => window.innerWidth)')
+    # canvas_width = min(canvas_width, raw_image.shape[1])
+    canvas_height = raw_image.shape[0] * canvas_width / raw_image.shape[1] # For responsive canvas
+    size_ratio = canvas_height / raw_image.shape[0]
     
-with col3:
-    st.header('Text Recognition:')
-    with st.spinner('Recognizing text in each predicted bounding box...'):
-        for idx, box_and_score in enumerate(boxes_and_scores):
-            patch = get_patch(raw_image, box_and_score[0])
-            text = reg_model.predict_one_patch(patch)
-             
-            phonetics = ''
-            for d in hvdic_translate(text):
-                if d['t'] == 3 and len(d['o']) > 0: 
-                    if len(d['o']) == 1: phonetics += d['o'][0] + ' '
-                    else: phonetics += f'''
-                        <select name="{d['o'][0]}">
-                            {''.join([f'<option><p>{o}</p></option>' for o in d['o']])}
-                        </select>
-                    '''.replace('\n', '')
-                else: phonetics += '[UNK] '
-            
-            st.markdown(f'''
-                <b>Text {idx + 1:02d}</b>: {text}<br/>
-                [hcmus](https://www.clc.hcmus.edu.vn/?page_id=3039): {hcmus_translate(text)}<br/>
-                [hvdic](https://hvdic.thivien.net/transcript.php#trans): {phonetics.strip()}<hr style="margin: 0;"/>
-            ''', unsafe_allow_html=True)
+    with st.spinner('Detecting bounding boxes containing text...'):
+        boxes = det_model.predict_one_page(raw_image)
+        key = img2str(raw_image)
+        
+        col11, col12 = st.columns(2)
+        with col11:
+            mode = st.radio('Mode', ('Drawing', 'Editing'), horizontal=True, label_visibility='collapsed', key=f'mode_{key}')
+            st.button('**(\*)** Double-click to remove.', disabled=True)
+            rec_clicked = st.button('Extract Text', type='primary', use_container_width=True)
+        with col12:
+            saved_format = st.radio('Type', ('csv', 'json'), horizontal=True, label_visibility='collapsed')
+            st.download_button(
+                label = f'📥 Export to data.{saved_format}',
+                data = open(f'data/data.{saved_format}', encoding='utf-8'),
+                file_name = f'data.{saved_format}',
+                use_container_width = True, 
+            )
+            st.download_button(
+                label = f'🖼️ Download patches',
+                data = open('data/patches.zip', 'rb'),
+                file_name = 'patches.zip',
+                use_container_width = True, 
+            )
+
+        canvas_result = st_canvas(
+            background_image = Image.open(image_name) if image_name else None,
+            fill_color = 'rgba(76, 175, 80, 0.3)',
+            width = max(canvas_width, 1),
+            height = max(canvas_height, 1),
+            stroke_width = 2,
+            stroke_color = 'red',
+            drawing_mode = 'rect' if mode == 'Drawing' else 'transform',
+            initial_drawing = generate_initial_drawing(boxes, size_ratio),
+            update_streamlit = rec_clicked,
+            key = f'canvas_{key}'
+        )
+        
+        
+with col2:
+    canvas_boxes = []
+    if canvas_result.json_data and 'objects' in canvas_result.json_data:
+        canvas_boxes = order_boxes4nom([
+            transform_fabric_box(obj, size_ratio) 
+            for obj in canvas_result.json_data['objects']
+        ])
+
+    with st.spinner('Recognizing text in each bounding box...'):
+        with ZipFile('data/patches.zip', 'w') as zip_file:
+            with open(f'data/data.json', 'w', encoding='utf-8') as json_file:
+                saved_json = {
+                    'num_boxes': len(canvas_boxes), 
+                    'height': raw_image.shape[0], 
+                    'width': raw_image.shape[1], 
+                    'patches': []
+                }
+                with open(f'data/data.csv', 'w', encoding='utf-8', newline='') as csv_file:
+                    csv_file.write('x1,y1,x2,y2,x3,y3,x4,y4,nom,modern,height,width\n')
+                    
+                    for idx, box in enumerate(canvas_boxes):
+                        patch = get_patch(raw_image, box)
+                        nom_text = rec_model.predict_one_patch(patch).strip()
+                        modern_text = hcmus_translate(nom_text).strip()
+                            
+                        with st.expander(f':red[**Text {idx + 1:02d}**:] {nom_text}'):
+                            col21, col22 = st.columns([1, 7])
+                            with col21:
+                                st.image(patch)
+                            with col22:
+                                points = sum(box.tolist(), [])
+                                points = ','.join([str(round(p)) for p in points])
+                                saved_json['patches'].append({
+                                    'nom': nom_text, 'modern': modern_text, 'points': points, 
+                                    'height': patch.shape[0], 'width': patch.shape[1]
+                                })
+                                st.json(saved_json['patches'][-1])
+                            
+                        st.markdown(f'''
+                            [hcmus](https://www.clc.hcmus.edu.vn/?page_id=3039): {modern_text}<br/>
+                            [hvdic](https://hvdic.thivien.net/transcript.php#trans): {hvdic_render(nom_text)}
+                        ''', unsafe_allow_html=True)
+
+                        encoded_patch = cv2.imencode('.jpg', cv2.cvtColor(patch, cv2.COLOR_BGR2RGB))[1]
+                        zip_file.writestr(f'img/{nom_text}.jpg', encoded_patch)
+                        csv_file.write(points + f',{nom_text},{modern_text},{patch.shape[0]},{patch.shape[1]}\n')
+                json.dump(saved_json, json_file, ensure_ascii=False, indent=4)
+                
+            zip_file.write('data/data.json')
+            zip_file.write('data/data.csv')

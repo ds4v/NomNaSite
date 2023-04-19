@@ -1,9 +1,12 @@
 import cv2
+import streamlit as st
 import tensorflow as tf
+
 from tensorflow.keras.layers import Input, UpSampling2D, Add, Concatenate, Lambda
 from keras_resnet.models import ResNet18
 from layers import ConvBnRelu, DeConvMap
 from processor import PostProcessor
+from handler.bbox import order_boxes4nom
 
 
 class DBNet(tf.keras.Model):
@@ -60,11 +63,12 @@ class DBNet(tf.keras.Model):
         return cv2.resize(image, (new_width, new_height))
 
 
-    def predict_one_page(self, page_path):
-        raw_image = cv2.cvtColor(cv2.imread(page_path), cv2.COLOR_BGR2RGB)
-        image = self.resize_image_short_side(raw_image)
-        image = image.astype(float) / 255.0
-
-        binarize_map, _, _ = self.model(tf.expand_dims(image, 0), training=False)
-        batch_boxes, batch_scores = self.post_processor(binarize_map.numpy(), [raw_image.shape[:2]])
-        return raw_image, batch_boxes[0], batch_scores[0]
+    @st.cache_data(show_spinner=False)
+    def predict_one_page(_self, raw_image):
+        image = _self.resize_image_short_side(raw_image).astype(float) / 255.0
+        binarize_map = _self.model(tf.expand_dims(image, 0), training=False)[0]
+        print(binarize_map.shape)
+        
+        batch_boxes, batch_scores = _self.post_processor(binarize_map.numpy(), [raw_image.shape[:2]])
+        boxes = order_boxes4nom(batch_boxes[0])
+        return boxes
