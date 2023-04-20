@@ -24,8 +24,8 @@ def load_models():
 
 
 def file_uploader(image_name='test.jpg'):
-    uploaded_file = st.file_uploader('Choose a file', type=['jpg', 'jpeg', 'png'])
-    url = st.text_input('Image URL:', 'http://www.nomfoundation.org/data/kieu/1866/page01a.jpg')
+    uploaded_file = st.file_uploader('Choose a file:', type=['jpg', 'jpeg', 'png'])
+    url = st.text_input('Image URL:', 'http://www.nomfoundation.org/data/kieu/1866/page01b.jpg')
     if uploaded_file is not None:
         bytes_data = uploaded_file.read()
         with open(image_name, 'wb') as f:

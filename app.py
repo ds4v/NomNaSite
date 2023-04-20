@@ -33,7 +33,25 @@ col1, col2 = st.columns(2)
 
 
 with st.sidebar:
+    st.image('cover.jpg')
+    st.header('Leverage Deep Learning to digitize old Vietnamese handwritten for historical document archiving')
+    st.info("Vietnamese Hán-Nôm digitalization using [VNPF's site](http://www.nomfoundation.org) as collected source")
+    
     file_uploader(image_name)
+    st.markdown('''
+        #### My digitalization series: 
+        - [Optical Character Recognition](https://github.com/ds4v/NomNaOCR)
+        - [Neural Machine Translation](https://github.com/ds4v/NomNaNMT)
+        - [Deployment](https://github.com/ds4v/NomNaSite)
+    ''')
+    st.markdown('''
+        <hr style="margin-top: 0;"/>
+        <p align="center">
+            <a href="https://github.com/18520339" target="_blank">
+                <img src="https://img.shields.io/badge/Quan%20Dang-100000?style=for-the-badge&logo=github" />
+           </a>
+        </p>
+    ''', unsafe_allow_html=True)
     
 
 with col1:

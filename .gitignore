@@ -5,3 +5,4 @@ assets/
 *.jpg
 *.h5
 !patches.zip
+!cover.jpg

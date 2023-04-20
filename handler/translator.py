@@ -15,7 +15,7 @@ def hcmus_translate(text):
         result = result[0][0]['pair']['modern_text']
         return result
     except:
-        print(f'[ERR] {text}: {response.text}')
+        print(f'[ERR] "{text}": {response.text}')
         return 'Cannot translate this text.'
 
 
