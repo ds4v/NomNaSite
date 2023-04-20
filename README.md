@@ -1,6 +1,6 @@
-# Deployment for Sino-Nôm digitalization 
+# Web application for Sino-Nôm digitalization 
 
-[![demo](https://user-images.githubusercontent.com/50880271/233448827-e935112b-4622-4ec0-9e86-862249babbfa.png)](https://youtu.be/o5xpfwalEWw)
+[![demo](https://user-images.githubusercontent.com/50880271/233472903-2ce1b5d1-e177-4f1c-8754-46c80d96c29e.jpg)](https://youtu.be/o5xpfwalEWw)
 
 > Demo: https://share.streamlit.io/ds4v/nomnasite/main/app.py
 
@@ -35,4 +35,4 @@ streamlit run app.py
 My Vietnamese Sino-Nôm digitalization series : 
 - [NomNaOCR](https://github.com/ds4v/NomNaOCR): Optical Character Recognition.
 - [NomNaNMT](https://github.com/ds4v/NomNaNMT): Neural Machine Translation.
-- [NomNaSite](https://github.com/ds4v/NomNaSite): Deployment.
+- [NomNaSite](https://github.com/ds4v/NomNaSite): Web Application.

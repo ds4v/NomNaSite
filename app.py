@@ -42,7 +42,7 @@ with st.sidebar:
         #### My digitalization series: 
         - [Optical Character Recognition](https://github.com/ds4v/NomNaOCR)
         - [Neural Machine Translation](https://github.com/ds4v/NomNaNMT)
-        - [Deployment](https://github.com/ds4v/NomNaSite)
+        - [Web Application](https://github.com/ds4v/NomNaSite)
     ''')
     st.markdown('''
         <hr style="margin-top: 0;"/>
