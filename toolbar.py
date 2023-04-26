@@ -10,7 +10,7 @@ def render_toolbar(key):
     with col12:
         saved_format = st.radio('Type', ('csv', 'json'), horizontal=True, label_visibility='collapsed')
         st.download_button(
-            label = f'📥 Export OCR result to data.{saved_format}',
+            label = f'📥 Export OCR results: data.{saved_format}',
             data = open(f'data/data.{saved_format}', encoding='utf-8'),
             file_name = f'data.{saved_format}',
             use_container_width = True, 
@@ -22,7 +22,13 @@ def render_toolbar(key):
             use_container_width = True, 
         )
     with col13: 
-        st.checkbox('Dark mode')
+        st.markdown('''
+            <p align="center">
+                <a href="https://github.com/ds4v/NomNaSite" target="_blank">
+                    <img src="https://img.shields.io/twitter/url?label=Source%20Code&logo=github&url=https://github.com/ds4v/NomNaSite" />
+                </a>
+            </p>
+        ''', unsafe_allow_html=True)
         if st.button('🧹 Clear cache of computations', use_container_width=True):
             st.cache_data.clear()
         if st.button("🧹 Clear model resources", use_container_width=True):

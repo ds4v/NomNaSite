@@ -33,7 +33,7 @@ col1, col2 = st.columns(2)
 
 
 with st.sidebar:
-    st.image('cover.jpg')
+    st.image('imgs/cover.jpg')
     st.header('Leverage Deep Learning to digitize old Vietnamese handwritten for historical document archiving')
     st.info("Vietnamese Hán-Nôm digitalization using [VNPF's site](http://www.nomfoundation.org) as collected source")
     
