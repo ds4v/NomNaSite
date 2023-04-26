@@ -1,7 +1,6 @@
 import cv2
 import json
 import hashlib
-import numpy as np
 import streamlit as st
 
 from PIL import Image
@@ -12,6 +11,7 @@ from streamlit_javascript import st_javascript
 from handler.asset import download_assets, load_models, file_uploader
 from handler.bbox import generate_initial_drawing, transform_fabric_box, order_boxes4nom, get_patch
 from handler.translator import hcmus_translate, hvdic_render
+from toolbar import render_toolbar
 from css import custom_style
 
 
@@ -62,28 +62,9 @@ with col1:
     size_ratio = canvas_height / raw_image.shape[0]
     
     with st.spinner('Detecting bounding boxes containing text...'):
-        boxes = det_model.predict_one_page(raw_image)
         key = img2str(raw_image)
-        
-        col11, col12 = st.columns(2)
-        with col11:
-            mode = st.radio('Mode', ('Drawing', 'Editing'), horizontal=True, label_visibility='collapsed', key=f'mode_{key}')
-            st.button('**(\*)** Double-click to remove.', disabled=True)
-            rec_clicked = st.button('Extract Text', type='primary', use_container_width=True)
-        with col12:
-            saved_format = st.radio('Type', ('csv', 'json'), horizontal=True, label_visibility='collapsed')
-            st.download_button(
-                label = f'📥 Export to data.{saved_format}',
-                data = open(f'data/data.{saved_format}', encoding='utf-8'),
-                file_name = f'data.{saved_format}',
-                use_container_width = True, 
-            )
-            st.download_button(
-                label = f'🖼️ Download patches',
-                data = open('data/patches.zip', 'rb'),
-                file_name = 'patches.zip',
-                use_container_width = True, 
-            )
+        boxes = det_model.predict_one_page(raw_image)
+        mode, rec_clicked = render_toolbar(raw_image)
 
         canvas_result = st_canvas(
             background_image = Image.open(image_name) if image_name else None,
@@ -135,7 +116,7 @@ with col2:
                                     'nom': nom_text, 'modern': modern_text, 'points': points, 
                                     'height': patch.shape[0], 'width': patch.shape[1]
                                 })
-                                st.json(saved_json['patches'][-1])
+                                st.table(saved_json['patches'][-1])
                             
                         st.markdown(f'''
                             [hcmus](https://www.clc.hcmus.edu.vn/?page_id=3039): {modern_text}<br/>

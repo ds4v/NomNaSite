@@ -36,5 +36,8 @@ custom_style = '''
             cursor: auto!important;
             padding-left: 0px;
         }
+        thead {
+            display: none;
+        }
     </style>
 '''
