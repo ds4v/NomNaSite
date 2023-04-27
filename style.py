@@ -1,4 +1,4 @@
-custom_style = '''
+custom_css = '''
     <style>
         .block-container > div > 
         [data-testid="stVerticalBlock"] > 

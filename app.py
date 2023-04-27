@@ -12,7 +12,7 @@ from handler.asset import download_assets, load_models, file_uploader
 from handler.bbox import generate_initial_drawing, transform_fabric_box, order_boxes4nom, get_patch
 from handler.translator import hcmus_translate, hvdic_render
 from toolbar import render_toolbar
-from css import custom_style
+from style import custom_css
 
 
 def img2str(cv2_image):
@@ -24,7 +24,7 @@ def img2str(cv2_image):
     
 
 st.set_page_config('Digitalize old Vietnamese handwritten script for historical document archiving', '🇻🇳', 'wide')
-st.markdown(custom_style, unsafe_allow_html=True)
+st.markdown(custom_css, unsafe_allow_html=True)
 image_name = 'test.jpg'
 
 download_assets()    
