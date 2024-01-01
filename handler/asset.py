@@ -9,7 +9,7 @@ from dbnet import DBNet
 @st.cache_resource(show_spinner='Downloading model weights and vocab.txt...')
 def download_assets():
     if not os.path.exists('assets.zip'):
-        urlretrieve('https://nomnaftp.000webhostapp.com/assets.zip', 'assets.zip')
+        urlretrieve('https://nomnaocr.000webhostapp.com/assets.zip', 'assets.zip')
     if not os.path.exists('assets'):
         shutil.unpack_archive('assets.zip', 'assets')
 

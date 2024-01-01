@@ -6,7 +6,7 @@ import streamlit as st
 
 @st.cache_data(show_spinner=False) 
 def hcmus_translate(text):
-    url = 'https://api.clc.hcmus.edu.vn/sentencepairs/90/1'
+    url = 'https://api.clc.hcmus.edu.vn/nom_translation/90/1'
     response = requests.request('POST', url, data={'nom_text': text})
     time.sleep(0.1)     
     
