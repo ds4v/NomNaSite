@@ -9,12 +9,12 @@ class CRNN(tf.keras.Model):
         super().__init__()
         self.max_length = 24
         self.height, self.width = 432, 48
-        self.model = self._build_model()
         self.num2char = tf.keras.layers.StringLookup(
             vocabulary = open('./assets/vocab.txt', encoding='utf-8').read().splitlines(),
             mask_token = '[PAD]', 
             invert = True,
         )
+        self.model = self._build_model()
         
         
     def _build_model(self):
@@ -45,7 +45,7 @@ class CRNN(tf.keras.Model):
         bigru2 = Bidirectional(GRU(256, return_sequences=True), name='bigru2')(bigru1)
         
         # Output layer
-        y_pred = Dense(7482, activation='softmax', name='rnn_output')(bigru2)
+        y_pred = Dense(self.num2char.vocabulary_size() + 1, activation='softmax', name='rnn_output')(bigru2)
         return tf.keras.Model(inputs=image_input, outputs=y_pred, name='CRNN')
 
 
