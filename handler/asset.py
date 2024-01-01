@@ -1,9 +1,17 @@
 import os
 import shutil
+import hashlib
 import streamlit as st
+
 from urllib.request import urlretrieve
 from crnn import CRNN
 from dbnet import DBNet
+
+
+def hash_bytes(bytes_data):
+    hash_object = hashlib.sha256(bytes_data)
+    hash_str = hash_object.hexdigest()
+    return hash_str
 
 
 @st.cache_resource(show_spinner='Downloading model weights and vocab.txt...')
@@ -23,11 +31,15 @@ def load_models():
     return det_model, rec_model
 
 
-def file_uploader(image_name='test.jpg'):
-    uploaded_file = st.file_uploader('Choose a file:', type=['jpg', 'jpeg', 'png'])
-    url = st.text_input('Image URL:', 'http://www.nomfoundation.org/data/kieu/1866/page01b.jpg')
+@st.cache_resource(show_spinner='Retrieving image...')
+def retrieve_image(uploaded_file, url):
     if uploaded_file is not None:
         bytes_data = uploaded_file.read()
-        with open(image_name, 'wb') as f:
+        image_path = f'./imgs/{hash_bytes(bytes_data)}.jpg'
+        with open(image_path, 'wb') as f:
             f.write(bytes_data)
-    elif url: urlretrieve(url, image_name)
+    elif url: 
+        bytes_data = url.encode(encoding='utf-8')
+        image_path = f'./imgs/{hash_bytes(bytes_data)}.jpg'
+        urlretrieve(url, image_path)
+    return image_path

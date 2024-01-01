@@ -1,6 +1,5 @@
 import cv2
 import json
-import hashlib
 import streamlit as st
 
 from PIL import Image
@@ -8,25 +7,15 @@ from zipfile import ZipFile
 from streamlit_drawable_canvas import st_canvas
 from streamlit_javascript import st_javascript
 
-from handler.asset import download_assets, load_models, file_uploader
+from handler.asset import hash_bytes, download_assets, load_models, retrieve_image
 from handler.bbox import generate_initial_drawing, transform_fabric_box, order_boxes4nom, get_patch
 from handler.translator import hcmus_translate, hvdic_render
 from toolbar import render_toolbar
 from style import custom_css
 
 
-def img2str(cv2_image):
-    img_bytes = cv2.imencode('.jpg', cv2_image)[1].tobytes()
-    hash_object = hashlib.sha256(img_bytes)
-    hash_str = hash_object.hexdigest()
-    print(hash_str)
-    return hash_str
-    
-
 st.set_page_config('Digitalize old Vietnamese handwritten script for historical document archiving', '🇻🇳', 'wide')
 st.markdown(custom_css, unsafe_allow_html=True)
-image_name = 'test.jpg'
-
 download_assets()    
 det_model, rec_model = load_models()
 col1, col2 = st.columns(2)
@@ -37,7 +26,11 @@ with st.sidebar:
     st.header('Leverage Deep Learning to digitize old Vietnamese handwritten for historical document archiving')
     st.info("Vietnamese Hán-Nôm digitalization using [VNPF's site](http://www.nomfoundation.org) as collected source")
     
-    file_uploader(image_name)
+    uploaded_file = st.file_uploader('Choose a file:', type=['jpg', 'jpeg', 'png'])
+    url = st.text_input('Image URL:', 'http://www.nomfoundation.org/data/kieu/1866/page01b.jpg')
+    image_path = retrieve_image(uploaded_file, url)
+    print(image_path)
+    
     st.markdown('''
         #### My digitalization series: 
         - [Optical Character Recognition](https://github.com/ds4v/NomNaOCR)
@@ -55,19 +48,21 @@ with st.sidebar:
     
 
 with col1:
-    raw_image = cv2.cvtColor(cv2.imread(image_name), cv2.COLOR_BGR2RGB)
+    raw_image = cv2.cvtColor(cv2.imread(image_path), cv2.COLOR_BGR2RGB)
     canvas_width = st_javascript('await fetch(window.location.href).then(response => window.innerWidth)')
     # canvas_width = min(canvas_width, raw_image.shape[1])
     canvas_height = raw_image.shape[0] * canvas_width / raw_image.shape[1] # For responsive canvas
     size_ratio = canvas_height / raw_image.shape[0]
     
     with st.spinner('Detecting bounding boxes containing text...'):
-        key = img2str(raw_image)
+        img_bytes = cv2.imencode('.jpg', raw_image)[1].tobytes()
+        key = hash_bytes(img_bytes)
         boxes = det_model.predict_one_page(raw_image)
-        mode, rec_clicked = render_toolbar(raw_image)
+        mode, rec_clicked = render_toolbar(key)
+        print(key)
 
         canvas_result = st_canvas(
-            background_image = Image.open(image_name) if image_name else None,
+            background_image = Image.open(image_path) if image_path else None,
             fill_color = 'rgba(76, 175, 80, 0.3)',
             width = max(canvas_width, 1),
             height = max(canvas_height, 1),
@@ -114,7 +109,7 @@ with col2:
                                 points = ','.join([str(round(p)) for p in points])
                                 saved_json['patches'].append({
                                     'nom': nom_text, 'modern': modern_text, 'points': points, 
-                                    'height': patch.shape[0], 'width': patch.shape[1]
+                                    'height': str(patch.shape[0]), 'width': str(patch.shape[1])
                                 })
                                 st.table(saved_json['patches'][-1])
                             
