@@ -7,7 +7,10 @@ import streamlit as st
 @st.cache_data(show_spinner=False) 
 def hcmus_translate(text):
     url = 'https://api.clc.hcmus.edu.vn/nom_translation/90/1'
-    response = requests.request('POST', url, data={'nom_text': text})
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36'
+    }
+    response = requests.request('POST', url, headers=headers, data={'nom_text': text})
     time.sleep(0.1)     
     
     try:
