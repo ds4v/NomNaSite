@@ -16,7 +16,7 @@ from style import custom_css
 
 st.set_page_config('Digitalize old Vietnamese handwritten script for historical document archiving', '🇻🇳', 'wide')
 st.markdown(custom_css, unsafe_allow_html=True)
-download_assets()    
+# download_assets()
 det_model, rec_model = load_models()
 col1, col2 = st.columns(2)
 
@@ -24,10 +24,10 @@ col1, col2 = st.columns(2)
 with st.sidebar:
     st.image('imgs/cover.jpg')
     st.header('Leverage Deep Learning to digitize old Vietnamese handwritten for historical document archiving')
-    st.info("Vietnamese Hán-Nôm digitalization using [VNPF's site](http://www.nomfoundation.org) as collected source")
+    st.info("Vietnamese Hán-Nôm digitalization using [VNPF's site](https://www.nomfoundation.org) as collected source")
     
     uploaded_file = st.file_uploader('Choose a file:', type=['jpg', 'jpeg', 'png'])
-    url = st.text_input('Image URL:', 'http://www.nomfoundation.org/data/kieu/1866/page01b.jpg')
+    url = st.text_input('Image URL:', 'https://www.nomfoundation.org/data/kieu/1866/page01b.jpg')
     image_path = retrieve_image(uploaded_file, url)
     print(image_path)
     

@@ -17,7 +17,7 @@ streamlit run app.py
 
 1. Input image from local or URL.
 2. Leverage DL models to extract text from image:
-    - Use [VNPF's site](http://www.nomfoundation.org) as collected source.
+    - Use [VNPF's site](https://www.nomfoundation.org) as collected source.
     - Apply models based on the results of [NomNaOCR](https://github.com/ds4v/NomNaOCR).
 3. Interactive mode using [streamlit-drawable-canvas](https://github.com/andfanilo/streamlit-drawable-canvas):
     - **Drawing** mode: draw rectangle boxes on image regions containing characters.
