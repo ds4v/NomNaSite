@@ -6,17 +6,17 @@ import streamlit as st
 
 @st.cache_data(show_spinner=False) 
 def hcmus_translate(text):
-    url = 'https://api.clc.hcmus.edu.vn/nom_translation/90/1'
+    url = 'https://tools.clc.hcmus.edu.vn/api/web/clc-sinonom/sinonom-transliteration'
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0',
+        'content-type': 'application/json',
     }
-    response = requests.request('POST', url, headers=headers, data={'nom_text': text})
+    response = requests.request('POST', url, headers=headers, data=json.dumps({'text': text}))
     time.sleep(0.1)     
     
     try:
-        result = json.loads(response.text)['sentences']
-        result = result[0][0]['pair']['modern_text']
-        return result
+        result = json.loads(response.text)['data']
+        return result['result_text_transcription'][0].strip()
     except:
         print(f'[ERR] "{text}": {response.text}')
         return 'Cannot translate this text.'
