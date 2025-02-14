@@ -49,12 +49,38 @@ def order_points_clockwise(box_points):
     return quad_box
 
 
-def order_boxes4nom(boxes):
-    return sorted(boxes, key=lambda box: (
-        box[:, 0].max(), 
-        box[:, 1].min()
-    ), reverse=True)
+def order_boxes4nom(bounding_boxes):
+    '''
+    Sort bounding boxes for a document whose text is arranged in vertical columns.
     
+    The document’s coordinate system is such that (0,0) is the top left and the reading order is:
+    - The right column (sentences read top-to-bottom)
+    - Followed by the left column (sentences read bottom-to-top)
+
+    bounding_boxes: list of boxes where each box is defined as:
+      [ [x1, y1], [x2, y2], [x3, y3], [x4, y4] ]
+    with the order of points being [bottom left, bottom right, top right, top left].
+    '''
+    # Sort bounding boxes by x-coordinates (right to left)
+    bounding_boxes.sort(key=lambda box: box[1][0], reverse=True)  # Sort by x2 (right boundary)
+    
+    # Group bounding boxes into columns
+    columns = []
+    for box in bounding_boxes:
+        placed = False
+        for col in columns:
+            # Check if the box belongs to an existing column (close x-coordinates)
+            if abs(box[1][0] - col[-1][1][0]) < abs(box[0][0] - box[1][0]) * 0.5: # Dynamic threshold based on width
+                col.append(box)
+                placed = True
+                break
+        if not placed: columns.append([box])
+    
+    # Sort each column from top to bottom
+    for col in columns:
+        col.sort(key=lambda box: box[2][1]) # Sort by y3 (top boundary)
+    return sum(columns, []) # Flatten the sorted columns into the final order
+
 
 def get_patch(page, points):
     points = order_points_clockwise(points)
